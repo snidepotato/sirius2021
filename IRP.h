@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstring>
 #include <iostream>
 
@@ -23,7 +24,7 @@ namespace SiriusFM
 			case CcyE::GBP : return "GBP";
 			case CcyE::CHF : return "CHF";
 			case CcyE::RUB : return "RUB";
-			default        : throw std::invalid_argument("");
+			default        : throw std::invalid_argument("CcyE2Str()");
 		}
 	}
 
@@ -40,7 +41,7 @@ namespace SiriusFM
 		else if(!strcmp(a_str, "RUB"))
 			return CcyE::RUB;
 		else 
-			throw std::invalid_argument("");
+			throw std::invalid_argument(a_str);
 	}
 
 	enum class IRModeE
