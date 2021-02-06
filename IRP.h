@@ -21,10 +21,10 @@ namespace SiriusFM
 		{
 			case CcyE::USD : return "USD";
 			case CcyE::EUR : return "EUR";
-			case CcyE::GBP : return "GBP";
+			case CcyE::GBP : return "GBP"; /* Really no break here.*/
 			case CcyE::CHF : return "CHF";
 			case CcyE::RUB : return "RUB";
-			default        : throw std::invalid_argument("CcyE2Str()");
+			default        : throw std::invalid_argument("Bad Ccy value!");
 		}
 	}
 
@@ -41,7 +41,7 @@ namespace SiriusFM
 		else if(!strcmp(a_str, "RUB"))
 			return CcyE::RUB;
 		else 
-			throw std::invalid_argument(a_str);
+			throw std::invalid_argument("Bad string!");
 	}
 
 	enum class IRModeE
