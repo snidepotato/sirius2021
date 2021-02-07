@@ -1,11 +1,11 @@
 TARGET = run
 
-SOURCES = main get_string
+SOURCES = main IRProviderConst 
 
 EXTLIBS =
 
 CXXFLAGS += -MP -MMD -fPIC
-CXXFLAGS += -std=c++71
+CXXFLAGS += -std=c++17
 CXXFLAGS += -O0 -g
 
 LDFLAGS += -fPIC
