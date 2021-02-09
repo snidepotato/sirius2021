@@ -16,7 +16,7 @@ namespace SiriusFM
 			}
 		};
 
-		double mu(double S_t) const {return m_muBar * S_t;};
-		double sigma(double S_t) const {return m_sigmaBar * S_t;};
+		double mu(double S_t, double a_t) const {return m_muBar * S_t;};
+		double sigma(double S_t, double a_t) const {return m_sigmaBar * S_t;};
 	};
 }
