@@ -10,16 +10,17 @@ namespace SiriusFM
 		EurCallOption(double a_K, int a_Tdays):Option(0, a_Tdays),
 											   m_K(a_K)
 		{
-			//check K > 0
+			if(a_K <= 0)
+				throw std::invalid_argument("Bad K")
 		}
 
 		~EurCallOption() override {}
 
-		virtual void Payoff(long a_L, 
+		virtual virtual Payoff(long a_L, 
 							double const* a_ts, 
 							double const* a_S) const 
 		{
-			return max(a_S[a_L - 1] - m_K, 0);
+			return fmax(a_S[a_L - 1] - m_K, 0);
 		}
 	};
 	
@@ -30,16 +31,17 @@ namespace SiriusFM
 		EurPutOption(double a_K, int a_Tdays):Option(0, a_Tdays),
 											  m_K(a_K)
 		{
-			//check K > 0
+			if(a_K <= 0)
+				throw std::invalid_argument("Bad K")
 		}
 		
 		~EurPutOption() override {}
 
-		virtual void Payoff(long a_L,
+		virtual double Payoff(long a_L,
 							double const* a_ts,
 							double const* a_S) const
 		{
-			return max(m_K - a_S[a_L - 1], 0);
+			return fmax(m_K - a_S[a_L - 1], 0);
 		}
 	};
 }
