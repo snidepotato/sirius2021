@@ -71,7 +71,7 @@ namespace SiriusFM
 		~MCEngine1D(){delete [] m_paths;};
 
 		MCEngine1D (MCEngine1D const&) = delete;
-		MCEngine1D operator=(MCEngine1D const&) = delete;
+		MCEngine1D& operator=(MCEngine1D const&) = delete;
 
 		template<bool IsRN>
 		void Simulate(time_t a_t0,
