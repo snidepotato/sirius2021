@@ -1,5 +1,4 @@
 #pragma once
-
 #include<cmath>
 
 namespace SiriusFM
@@ -20,7 +19,7 @@ namespace SiriusFM
 							double const* a_ts, 
 							double const* a_S) const 
 		{
-			return max(a_S - m_K, 0);
+			return max(a_S[a_L - 1] - m_K, 0);
 		}
 	};
 	
@@ -40,7 +39,7 @@ namespace SiriusFM
 							double const* a_ts,
 							double const* a_S) const
 		{
-			return max(m_K - a_S, 0);
+			return max(m_K - a_S[a_L - 1], 0);
 		}
 	};
 }
