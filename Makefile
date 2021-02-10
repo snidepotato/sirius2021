@@ -1,3 +1,5 @@
+#If some problems with Makefile are occured, consider running with
+#g++ -Wall -g -std=c++17 Test2.cpp IRProvider.cpp -o a && ./a [args]
 TARGET = run
 
 SOURCES = Test2 IRProviderConst 
