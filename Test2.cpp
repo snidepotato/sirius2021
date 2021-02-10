@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
 	time_t t0 = time(nullptr);
 	time_t T = t0 + SEC_IN_DAY * T_days;
-	double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
+	//double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
 
 	//Run MC
 	mce.Simulate<false>(t0, T, tau_mins, P, &diff, &irp, &irp, ccyA, ccyB);
