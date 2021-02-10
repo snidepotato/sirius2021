@@ -78,7 +78,6 @@ namespace SiriusFM
 					  time_t a_T,
 					  int a_tau_min,
 					  long a_P,
-					  double a_S0,
 					  Diffusion1D const* a_diff,
 					  AProvider const* a_rateA,
 					  BProvider const* a_rateB, 

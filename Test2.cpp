@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	CcyE ccyB = CcyE::USD;
 
 	IRProvider<IRModeE::Const> irp(nullptr);
-	DiffusionGBM diff(mu, sigma);
+	DiffusionGBM diff(mu, sigma, S0);
 
 	MCEngine1D<DiffusionGBM, decltype(irp),
 		decltype(irp), CcyE, CcyE> mce(20000, 20000);
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 	double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
 
 	//Run MC
-	mce.Simulate<false>(t0, T, tau_mins, P, S0, &diff, &irp, &irp, ccyA, ccyB);
+	mce.Simulate<false>(t0, T, tau_mins, P, &diff, &irp, &irp, ccyA, ccyB);
 
 	//Analyse the result
 	auto res = mce.GetPaths();
