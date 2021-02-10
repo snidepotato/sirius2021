@@ -30,7 +30,7 @@ namespace SiriusFM
 		AssetClassB m_B; //Asset B
 
 		bool m_isRN; //risk-neutral trend; true for option pricing, false for
-				   //option speculating.
+				     //option speculating.
 	public:
 
 		MCEngine1D(long a_MaxL, long a_MaxP):
@@ -42,9 +42,9 @@ namespace SiriusFM
 									/*
 									m_tau(NaN),
 									m_t0(NaN),
-									m_diff(NULL),
-									m_rateA(NULL),
-									m_rateB(NULL),
+									m_diff(nullptr),
+									m_rateA(nullptr),
+									m_rateB(nullptr),
 									m_A(AssetClassA::Undefined),
 									m_B(AssetClassB::Undefined),
 									m_isRn(false)

@@ -26,7 +26,7 @@ namespace SiriusFM
 		while(fgets(ccy, CCY_SIZE+1, src))
 		{
 			fgets(buf, BUF_SIZE, src);
-			m_IRs[int(Str2CcyE(ccy))] = strtod(buf+2, NULL);//consider buf+1
+			m_IRs[int(Str2CcyE(ccy))] = strtod(buf+2, nullptr);//consider buf+1
 		}
 
 	}

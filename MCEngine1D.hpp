@@ -30,9 +30,9 @@ namespace SiriusFM
 			 AssetClassB a_B)
 	{
 		//check if parameters are valid
-		assert(a_diff != NULL && //consider using nullptr instead of NULL
-			   a_rateA != NULL &&
-			   a_rateB != NULL &&
+		assert(a_diff != nullptr && //consider using nullptr instead of NULL
+			   a_rateA != nullptr &&
+			   a_rateB != nullptr &&
 			   a_P > 0 &&
 			   a_A != AssetClassA::Undefined &&
 			   a_B != AssetClassB::Undefined &&

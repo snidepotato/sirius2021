@@ -1,7 +1,7 @@
 #include "DiffusionGBM.h"
 #include "IRProviderConst.h"
 #include "MCEngine1D.hpp"
-#include "Options.h"
+#include "Option.h"
 #include "VanillaOptions.h"
 
 using namespace SiriusFM;
@@ -11,23 +11,22 @@ int main(int argc, char** argv)
 {
 	if(argc != 9)
 	{
-		cerr << "params: mu, sigma, S0,\nCall/Put, K, Tdays,\n tau_mins, P\n";
+		cerr << "params: mu, sigma, S0,\nCall/Put, K, Tdays,\ntau_mins, P\n";
 		return 1;
 	}
 	double mu = atof(argv[1]);
 	double sigma = atof(argv[2]);
 	double S0 = atof(argv[3]);
-	const char* Type = argv[4];
+	const char* OptType = argv[4];
 	double K = atof(argv[5]);
 	long T_days = atol(argv[6]);
 	int tau_mins = atoi(argv[7]);
 	long P = atol(argv[8]);
 
-	//check sigma > 0, S0 > 0, T_days > 0, tau_min > 0, P > 0
 	assert(sigma > 0 &&
 		   S0 > 0 &&
 		   T_days > 0 &&
-		   tau_min > 0 &&
+		   tau_mins > 0 &&
 		   P > 0 &&
 		   K > 0);
 
@@ -38,20 +37,21 @@ int main(int argc, char** argv)
 	DiffusionGBM diff(mu, sigma);
 
 	MCEngine1D<DiffusionGBM, decltype(irp),
-		decltype(irp), CcyE, CcyE> mce(200000, 200000);
+		decltype(irp), CcyE, CcyE> mce(20000, 20000);
+
+	Option const* opt = (strcmp(OptType, "Call") == 0)
+						? static_cast<Option*>(new EurCallOption(K, T_days))
+						: 
+						(strcmp(OptType, "Put") == 0)
+						? static_cast<Option*> (new EurPutOption(K, T_days))
+						:throw invalid_argument("Bad option type");
 
 	time_t t0 = time(nullptr);
-	cout << "t0 = " << t0 << endl;
 	time_t T = t0 + SEC_IN_DAY * T_days;
-	cout << "T = " << T << endl;
 	double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
-	cout << "Ty = " << Ty << endl;
 
 	//Run MC
-	cout << "Running Simulate() with: " << endl;
-	cout << t0 << endl << T << endl << tau_mins << endl << P << endl << S0;
-	cout << endl;
-	mce.Simulate<false>(t0, T, tau_mins, P, S0, &diff, &irp, &irp, ccyA, ccyA);
+	mce.Simulate<false>(t0, T, tau_mins, P, S0, &diff, &irp, &irp, ccyA, ccyB);
 
 	//Analyse the result
 	auto res = mce.GetPaths();
@@ -67,21 +67,22 @@ int main(int argc, char** argv)
 	{
 		double const* path = paths + p * L1;
 		double ST = path[L1-1];
-		//in pratice may get ST <= 0
 		if(ST <= 0)
-			continue;
+			continue; //Actually, ST may be <= 0
 		++N;
-		double RT = log(ST/S0);	
-		EST += RT;
-		EST2 += RT * RT;
+		double RT = opt->Payoff(L1, nullptr, path);
+		EST += RT;						    	
+		EST2 += RT * RT;					
 	}
-
+	//add discount factor to get option price
 	assert(N > 1);
-	EST /= double(N); //(mu - sigma^2/2) * T
-	double VarST = (EST2 - double(N) * EST * EST )/ double(N-1); //sigma^2 * T
+	EST /= double(N);
 
-	double sigma2E = VarST / Ty;
-	double muE = (EST + VarST / 2) / Ty;
+	double VarST = (EST2 - double(N) * EST * EST )/ double(N-1);
+	//double VarST = (EST2 / double(N) - EST * EST);
+
+	cout << "Expected val. " << EST << endl;
+	cout << "STD " << sqrt(VarST) << endl;
 
 	/*
 	cout << "mu = " << mu << ", mu_est = " << muE << endl;

@@ -11,15 +11,16 @@ namespace SiriusFM
 											   m_K(a_K)
 		{
 			if(a_K <= 0)
-				throw std::invalid_argument("Bad K")
+				throw std::invalid_argument("Bad K");
 		}
 
 		~EurCallOption() override {}
 
 		virtual double Payoff(long a_L, 
 							  double const* a_ts, 
-							  double const* a_S) const 
+							  double const* a_S) const override
 		{
+			assert(a_L > 0 && a_S != nullptr);
 			return fmax(a_S[a_L - 1] - m_K, 0);
 		}
 	};
@@ -32,14 +33,14 @@ namespace SiriusFM
 											  m_K(a_K)
 		{
 			if(a_K <= 0)
-				throw std::invalid_argument("Bad K")
+				throw std::invalid_argument("Bad K");
 		}
 		
 		~EurPutOption() override {}
 
 		virtual double Payoff(long a_L,
 							  double const* a_ts,
-							  double const* a_S) const
+							  double const* a_S) const override
 		{
 			return fmax(m_K - a_S[a_L - 1], 0);
 		}
