@@ -12,6 +12,7 @@ namespace SiriusFM
 			 typename BProvider,
 			 typename AssetClassA,
 			 typename AssetClassB>
+	template<bool IsRN>
 	inline void MCEngine1D <Diffusion1D, 
 		   					AProvider,
 							BProvider,
@@ -26,8 +27,7 @@ namespace SiriusFM
 			 AProvider const* a_rateA,
 			 BProvider const* a_rateB, 
 			 AssetClassA a_A,
-			 AssetClassB a_B,
-			 bool a_isRN)
+			 AssetClassB a_B)
 	{
 		//check if parameters are valid
 		assert(a_diff != NULL && //consider using nullptr instead of NULL
@@ -40,19 +40,23 @@ namespace SiriusFM
 			   a_tau_min > 0);
 
 		double y0 = YearFrac(a_t0);
-		double yT = YearFrac(a_T);
-
-		double tau = double(a_tau_min)/(365.25 * 1440.0);
-		long L = long(ceil((yT-y0)/tau)) + 1; //Path length
-		assert(L >= 2);
-		long P = 2 * a_P; //antithetic variables
+		time_t T_sec = a_T - a_t0;
+		time_t tau_sec = a_tau_min * SEC_IN_MIN;
+		long L_segm = (T_sec % tau_sec == 0) ? T_sec / tau_sec
+											 : T_sec / tau_sec + 1;
+		double tau = YearFracInt(tau_sec);
+		long L = L_segm + 1;
+		long P = 2 * a_P;
 
 		//check if L, P valid or realloc memory
 		if(L*P > m_MaxL * m_MaxP)
 			throw std::invalid_argument("bad length or path num");
 
 		double stau = sqrt(tau);
-		double tlast = yT-y0 - double(L-2)*tau;
+		double tlast = (T_sec % tau_sec == 0)
+					   ? tau
+					   : YearFracInt(T_sec - (L - 1) * tau_sec);
+		assert(tlast <= tau && tlast > 0);
 		double slast = sqrt(tlast);
 		assert(slast <= stau && slast > 0);
 
@@ -77,7 +81,7 @@ namespace SiriusFM
 				double mu0 = 0;
 				double mu1 = 0;
 
-				if(a_isRN) //Risk-neutral case
+				if(IsRN) //Risk-neutral case
 				{
 					double delta_r = a_rateB->r(a_B, y) - a_rateA->r(a_A, y);
 					
@@ -100,16 +104,26 @@ namespace SiriusFM
 				{
 					Sn0 = Sp0 + mu0 * tlast + sigma0 * Z * slast;
 					Sn1 = Sp1 + mu1 * tlast - sigma1 * Z * slast;
+
+					y += tlast;
 				}
 				else
 				{
 					Sn0 = Sp0 + mu0 * tau + sigma0 * Z * stau;
 					Sn1 = Sp1 + mu1 * tau - sigma1 * Z * stau;
+
+					y += tau;
 				}
 				path0[l] = Sn0;
 				path1[l] = Sn1;
+
+				Sp0 = Sn0;
+				Sp1 = Sn1;
 				//End of l loop
 			}
 		}
+
+		m_L = L;
+		m_P = P;
 	};
 }

@@ -17,6 +17,9 @@ namespace SiriusFM
 		for(int k = 0; k < int(CcyE::N); ++k)
 			m_IRs[k] = 0;
 
+		if(a_file == nullptr) //check if a_file empty
+			return;
+
 		if(!src)
 			throw std::invalid_argument("Constructor");
 

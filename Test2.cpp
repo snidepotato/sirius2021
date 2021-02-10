@@ -1,25 +1,35 @@
 #include "DiffusionGBM.h"
 #include "IRProviderConst.h"
 #include "MCEngine1D.hpp"
+#include "Options.h"
+#include "VanillaOptions.h"
 
 using namespace SiriusFM;
 using namespace std;
 
 int main(int argc, char** argv)
 {
-	if(argc != 7)
+	if(argc != 9)
 	{
-		cerr << "params: mu, sigma, S0, T_days, tau_mins, P\n";
+		cerr << "params: mu, sigma, S0,\nCall/Put, K, Tdays,\n tau_mins, P\n";
 		return 1;
 	}
 	double mu = atof(argv[1]);
 	double sigma = atof(argv[2]);
 	double S0 = atof(argv[3]);
-	long T_days = atol(argv[4]);
-	int tau_mins = atoi(argv[5]);
-	long P = atol(argv[6]);
+	const char* Type = argv[4];
+	double K = atof(argv[5]);
+	long T_days = atol(argv[6]);
+	int tau_mins = atoi(argv[7]);
+	long P = atol(argv[8]);
 
 	//check sigma > 0, S0 > 0, T_days > 0, tau_min > 0, P > 0
+	assert(sigma > 0 &&
+		   S0 > 0 &&
+		   T_days > 0 &&
+		   tau_min > 0 &&
+		   P > 0 &&
+		   K > 0);
 
 	CcyE ccyA = CcyE::USD;
 	CcyE ccyB = CcyE::USD;
@@ -28,21 +38,20 @@ int main(int argc, char** argv)
 	DiffusionGBM diff(mu, sigma);
 
 	MCEngine1D<DiffusionGBM, decltype(irp),
-		decltype(irp), CcyE, CcyE> mce(20000, 20000);
+		decltype(irp), CcyE, CcyE> mce(200000, 200000);
 
 	time_t t0 = time(nullptr);
-	cerr << "t0 = " << t0 << endl;
+	cout << "t0 = " << t0 << endl;
 	time_t T = t0 + SEC_IN_DAY * T_days;
-	cerr << "T = " << T << endl;
+	cout << "T = " << T << endl;
 	double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
-	cerr << "Ty = " << Ty << endl;
+	cout << "Ty = " << Ty << endl;
 
 	//Run MC
-	cerr << "Running Simulate() with: " << endl;
-	cerr << t0 << endl << T << endl << tau_mins << endl << P << endl << S0;
-	cerr << endl;
+	cout << "Running Simulate() with: " << endl;
+	cout << t0 << endl << T << endl << tau_mins << endl << P << endl << S0;
+	cout << endl;
 	mce.Simulate<false>(t0, T, tau_mins, P, S0, &diff, &irp, &irp, ccyA, ccyA);
-	//S0 better be given to diff, not to MCE
 
 	//Analyse the result
 	auto res = mce.GetPaths();
@@ -74,9 +83,11 @@ int main(int argc, char** argv)
 	double sigma2E = VarST / Ty;
 	double muE = (EST + VarST / 2) / Ty;
 
+	/*
 	cout << "mu = " << mu << ", mu_est = " << muE << endl;
 	cout << "sigma^2 = " << sigma * sigma << ", sigma^2_est = " << sigma2E;
 	cout << endl;
+	*/
 
 	return 0;
 }
