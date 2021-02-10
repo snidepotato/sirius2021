@@ -1,6 +1,6 @@
 TARGET = run
 
-SOURCES = main IRProviderConst 
+SOURCES = Test2 IRProviderConst 
 
 EXTLIBS =
 
@@ -8,6 +8,7 @@ CXXFLAGS += -MP -MMD -fPIC
 CXXFLAGS += -std=c++17
 CXXFLAGS += -O0 -g
 
+LDFLAGS += -v
 LDFLAGS += -fPIC
 LDFLAGS += -pthread
 LDFLAGS += -Wl,--as-needed
