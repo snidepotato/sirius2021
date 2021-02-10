@@ -1,5 +1,6 @@
 #pragma once
 
+#include<stdexcept>
 namespace SiriusFM
 {
                 
@@ -16,6 +17,7 @@ namespace SiriusFM
 		{
 			if(m_sigmaBar <= 0)
 			{
+				throw std::invalid_argument("Bad sigma");
 			}
 		};
 
