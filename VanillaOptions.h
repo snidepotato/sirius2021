@@ -16,9 +16,9 @@ namespace SiriusFM
 
 		~EurCallOption() override {}
 
-		virtual virtual Payoff(long a_L, 
-							double const* a_ts, 
-							double const* a_S) const 
+		virtual double Payoff(long a_L, 
+							  double const* a_ts, 
+							  double const* a_S) const 
 		{
 			return fmax(a_S[a_L - 1] - m_K, 0);
 		}
@@ -38,8 +38,8 @@ namespace SiriusFM
 		~EurPutOption() override {}
 
 		virtual double Payoff(long a_L,
-							double const* a_ts,
-							double const* a_S) const
+							  double const* a_ts,
+							  double const* a_S) const
 		{
 			return fmax(m_K - a_S[a_L - 1], 0);
 		}
