@@ -4,6 +4,7 @@
 #include<ctime>
 #include<stdexcept>
 #include"Time.h"
+#include<tuple>
 
 namespace SiriusFM
 {
