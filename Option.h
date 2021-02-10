@@ -11,8 +11,8 @@ namespace SiriusFM
 									           m_Tdays(a_Tdays) {};
 	public:
 		virtual double Payoff(long a_L, 
-							  double const* a_ts, 
-							  double const* a_S) const = 0;
+							  double const* a_S,
+							  double const* a_ts) const = 0;
 		virtual ~Option() {};
 		bool IsAmerican() const {return m_isAmerican;};
 	};
