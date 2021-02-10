@@ -21,12 +21,10 @@ namespace SiriusFM
 						}
 				};
 
-				double mu(double s){return m_mu * s;}
-				double sigma(double s)
+				double mu(double s, double t){return m_mu * s;}
+				double sigma(double s, double t)
 				{
 						return m_sigma_0 + m_sigma_1 * s + m_sigma_2 * s * s;
 				}
 		};
 }
-
-				

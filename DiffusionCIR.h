@@ -19,7 +19,10 @@ namespace SiriusFM
 					}
 			};
 
-			double mu(double S_t) {return m_kappa*(m_theta -  S_t);};
-			double sigma(double S_t = 0) {return m_sigma * sqrt(S_t);};
+			double mu(double S_t, double t) {return m_kappa*(m_theta -  S_t);};
+			double sigma(double S_t = 0, double t) 
+			{
+				return m_sigma * sqrt(S_t);
+			};
 	};
 }
