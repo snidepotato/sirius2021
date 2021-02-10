@@ -22,7 +22,6 @@ namespace SiriusFM
 			 time_t a_T,
 			 int a_tau_min,
 			 long a_P,    //a_P and a_S0 -- forgotten parameters
-			 double a_S0, //init somewhere?
 			 Diffusion1D const* a_diff,
 			 AProvider const* a_rateA,
 			 BProvider const* a_rateB, 
@@ -69,12 +68,12 @@ namespace SiriusFM
 			double * path0 = m_paths + 2 * p * L;
 			double * path1 = path0 + L;
 
-			path0[0] = a_S0;
-			path1[0] = a_S0;
+			path0[0] = a_diff->GetStartPoint();
+			path1[0] = a_diff->GetStartPoint();
 
 			double y = y0;
-			double Sp0 = a_S0;
-			double Sp1 = a_S0;
+			double Sp0 = a_diff->GetStartPoint();
+			double Sp1 = a_diff->GetStartPoint();
 			for(long l = 1; l < L; ++l)
 			{
 				//Compute the Trend
