@@ -1,11 +1,12 @@
 #pragma once 
 
-#define SEC_IN_MIN 60
-#define SEC_IN_DAY 86400
-#define AVG_DAYS_IN_YEAR 365.25
-#define EPOCH_BEGIN 1970.0
 namespace SiriusFM
 {
+	constexpr int SEC_IN_MIN = 60;
+	constexpr int SEC_IN_DAY = 86400;
+	constexpr double AVG_DAYS_IN_YEAR = 365.25;
+	constexpr double EPOCH_BEGIN = 1970.0;
+
 	inline double YearFrac(time_t a_t)
 	{
 		//average year in seconds:

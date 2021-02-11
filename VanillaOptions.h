@@ -1,5 +1,7 @@
 #pragma once
 #include<cmath>
+#include"Option.h"
+#include<cassert>
 
 namespace SiriusFM
 {
@@ -7,8 +9,9 @@ namespace SiriusFM
 	{
 		double const m_K;
 	public:
-		EurCallOption(double a_K, int a_Tdays):Option(0, a_Tdays),
-											   m_K(a_K)
+		EurCallOption(double a_K, time_t a_expirTime):
+												Option(a_expirTime, false),
+											   	m_K(a_K)
 		{
 			if(a_K <= 0)
 				throw std::invalid_argument("Bad K");
@@ -29,8 +32,9 @@ namespace SiriusFM
 	{
 		double const m_K;
 	public:
-		EurPutOption(double a_K, int a_Tdays):Option(0, a_Tdays),
-											  m_K(a_K)
+		EurPutOption(double a_K, time_t a_expirTime):
+												Option(a_expirTime, false),
+											  	m_K(a_K)
 		{
 			if(a_K <= 0)
 				throw std::invalid_argument("Bad K");
@@ -42,7 +46,7 @@ namespace SiriusFM
 							  double const* a_S,
 							  double const* a_ts = nullptr) const override
 		{
-			return fmax(m_K - a_S[a_L - 1], 0);
+			return fmax(m_K - a_S[a_L - 1], 0); //fmax or std?
 		}
 	};
 }

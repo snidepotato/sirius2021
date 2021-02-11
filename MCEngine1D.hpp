@@ -33,15 +33,15 @@ namespace SiriusFM
 			 PathEvaluator* a_pathEval)
 	{
 		//check if parameters are valid
-		assert(a_diff != nullptr && 
-			   a_rateA != nullptr &&
-			   a_rateB != nullptr &&
-			   a_P > 0 &&
-			   a_A != AssetClassA::Undefined &&
-			   a_B != AssetClassB::Undefined &&
-			   a_t0 <= a_T &&
-			   a_tauMin > 0 &&
-			   a_pathEval != nullptr);
+		assert(a_diff != nullptr); 
+			   assert(a_rateA != nullptr);
+			   assert(a_rateB != nullptr);
+			   assert(a_P > 0);
+			   assert(a_A != AssetClassA::Undefined);
+			   assert(a_B != AssetClassB::Undefined);
+			   assert(a_t0 <= a_T);
+			   assert(a_tauMin > 0);
+		assert(a_pathEval != nullptr);
 
 		double y0 = YearFrac(a_t0);
 		time_t T_sec = a_T - a_t0;

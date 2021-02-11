@@ -4,11 +4,12 @@ namespace SiriusFM
 {
 	class Option
 	{
-	protected:
+	public: //!!!!!!!!!!!
 		bool const m_isAmerican;
-		int const m_Tdays;
-		Option(int a_isAmerican, int a_Tdays): m_isAmerican(a_isAmerican),
-									           m_Tdays(a_Tdays) {};
+		time_t const m_expirTime;
+		Option(time_t a_expirTime, bool a_isAmerican):
+												m_expirTime(a_expirTime),
+												m_isAmerican(a_isAmerican) {};
 	public:
 		virtual double Payoff(long a_L, 
 							  double const* a_S,
