@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 		if(ST <= 0)
 			continue; //Actually, ST may be <= 0
 		++N;
-		double RT = opt->Payoff(L1, nullptr, path);
+		double RT = opt->Payoff(L1, path);
 		EST += RT;						    	
 		EST2 += RT * RT;					
 	}
@@ -83,12 +83,14 @@ int main(int argc, char** argv)
 
 	cout << "Expected val. " << EST << endl;
 	cout << "STD " << sqrt(VarST) << endl;
+	//cout << EST;
 
 	/*
 	cout << "mu = " << mu << ", mu_est = " << muE << endl;
 	cout << "sigma^2 = " << sigma * sigma << ", sigma^2_est = " << sigma2E;
 	cout << endl;
 	*/
+
 
 	return 0;
 }

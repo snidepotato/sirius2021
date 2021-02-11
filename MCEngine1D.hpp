@@ -60,7 +60,7 @@ namespace SiriusFM
 		assert(slast <= stau && slast > 0);
 
 		std::normal_distribution<> N01(0.0, 1.0);
-		std::mt19937_64 U;
+		std::mt19937_64 U(time(nullptr));
 		
 		//Main simulation loop:
 		for(long p = 0; p < a_P; ++p)

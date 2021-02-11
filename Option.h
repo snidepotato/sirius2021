@@ -12,7 +12,7 @@ namespace SiriusFM
 	public:
 		virtual double Payoff(long a_L, 
 							  double const* a_S,
-							  double const* a_ts) const = 0;
+							  double const* a_ts = nullptr) const = 0;
 		virtual ~Option() {};
 		bool IsAmerican() const {return m_isAmerican;};
 	};
