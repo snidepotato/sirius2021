@@ -4,6 +4,47 @@
 #include "Option.h"
 #include "VanillaOptions.h"
 
+namespace SiriusFM
+{
+	class OPPathEval
+	{
+		Option const* const m_option;
+		long m_P; //total paths evaluated
+		double m_sum; //of payoffs
+		double m_sum2; //of payoffs^2
+	public:
+		OPPathEval(Option const* a_option)
+		: m_option(a_option),
+		  m_P(0),
+		  m_sum(0),
+		  m_sum2(0)
+		{assert(m_option!=nullptr);}
+
+		void operator() (long a_L, 
+						 long a_PM, 
+						 double const* a_paths,
+						 double const* a_ts)
+		{
+			for(long p = 0; p < a_PM; ++p)
+			{
+				double const* path = a_paths + p * a_L;
+				double payoff = m_option->payoff(a_L, path, a_ts);
+				m_sum += payoff;
+				m_sum2 += payoff*payoff;
+			}
+			m_P += a_PM;
+		}
+
+		//getpxstats returns E[Px], std[Px]:
+		std::pair<double ,double> GetPxStats() const 
+		{
+			if( m_P < 2)
+				throw std::runtime_error("empty OPPathEval");
+			double px = m_sum / double(m_P);
+
+	};
+}
+
 using namespace SiriusFM;
 using namespace std;
 
@@ -50,11 +91,12 @@ int main(int argc, char** argv)
 	time_t T = t0 + SEC_IN_DAY * T_days;
 	//double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
 
+	//patheval:
+
 	//Run MC
-	mce.Simulate<false>(t0, T, tau_mins, P, &diff, &irp, &irp, ccyA, ccyB);
+	mce.Simulate<true>(t0, T, tau_mins, P, 1, &diff, &irp, &irp, ccyA, ccyB);
 
 	//Analyse the result
-	auto res = mce.GetPaths();
 	long L1 = get<0>(res);
 	long P1 = get<1>(res);
 	double const* paths = get<2>(res);
