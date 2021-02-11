@@ -30,7 +30,7 @@ namespace SiriusFM
 			 BProvider const* a_rateB, 
 			 AssetClassA a_A,
 			 AssetClassB a_B,
-			 PathEvaluator a_pathEval)
+			 PathEvaluator* a_pathEval)
 	{
 		//check if parameters are valid
 		assert(a_diff != nullptr && 
