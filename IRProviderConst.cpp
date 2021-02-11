@@ -1,6 +1,7 @@
 #include "IRProviderConst.h"
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 
 #define BUF_SIZE 1024
