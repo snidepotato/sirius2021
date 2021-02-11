@@ -28,7 +28,7 @@ namespace SiriusFM
 			for(long p = 0; p < a_PM; ++p)
 			{
 				double const* path = a_paths + p * a_L;
-				double payoff = m_option->payoff(a_L, path, a_ts);
+				double payoff = m_option->Payoff(a_L, path, a_ts);
 				m_sum += payoff;
 				m_sum2 += payoff*payoff;
 			}
@@ -41,6 +41,10 @@ namespace SiriusFM
 			if( m_P < 2)
 				throw std::runtime_error("empty OPPathEval");
 			double px = m_sum / double(m_P);
+			double var = ( m_sum2 - double(m_P) * px * px) / double(m_P - 1);
+			double err = (px == 0) ? sqrt(var) : sqrt(var)/fabs(px);
+			return std::make_pair(px, sqrt(var));
+		}
 
 	};
 }
@@ -77,8 +81,8 @@ int main(int argc, char** argv)
 	IRProvider<IRModeE::Const> irp(nullptr);
 	DiffusionGBM diff(mu, sigma, S0);
 
-	MCEngine1D<DiffusionGBM, decltype(irp),
-		decltype(irp), CcyE, CcyE> mce(20000, 20000);
+	MCEngine1D<decltype(diff), decltype(irp),
+		decltype(irp), CcyE, CcyE, OPPathEval> mce(20000, 20000);
 
 	Option const* opt = (strcmp(OptType, "Call") == 0)
 						? static_cast<Option*>(new EurCallOption(K, T_days))
@@ -92,47 +96,18 @@ int main(int argc, char** argv)
 	//double Ty = double(T_days)/AVG_DAYS_IN_YEAR;
 
 	//patheval:
+	OPPathEval pathEval(opt);
 
 	//Run MC
-	mce.Simulate<true>(t0, T, tau_mins, P, 1, &diff, &irp, &irp, ccyA, ccyB);
+	//Use timer seed = true
+	mce.Simulate<true>
+		(t0, T, tau_mins, P, 1, &diff, &irp, &irp, ccyA, ccyB, &pathEval);
 
-	//Analyse the result
-	long L1 = get<0>(res);
-	long P1 = get<1>(res);
-	double const* paths = get<2>(res);
+	auto res = pathEval.GetPxStats();
+	double px = res.first;
+	double err = res.second;
+	cout << px << " " << err << endl;
 
-	//compute E of log S_T
-	double EST = 0.0;
-	double EST2 = 0.0;
-	int N = 0; //valid paths
-	for(int p = 0; p < P1; ++p)
-	{
-		double const* path = paths + p * L1;
-		double ST = path[L1-1];
-		if(ST <= 0)
-			continue; //Actually, ST may be <= 0
-		++N;
-		double RT = opt->Payoff(L1, path);
-		EST += RT;						    	
-		EST2 += RT * RT;					
-	}
-	//add discount factor to get option price
-	assert(N > 1);
-	EST /= double(N);
-
-	double VarST = (EST2 - double(N) * EST * EST )/ double(N-1);
-	//double VarST = (EST2 / double(N) - EST * EST);
-
-	cout << "Expected val. " << EST << endl;
-	cout << "STD " << sqrt(VarST) << endl;
-	//cout << EST;
-
-	/*
-	cout << "mu = " << mu << ", mu_est = " << muE << endl;
-	cout << "sigma^2 = " << sigma * sigma << ", sigma^2_est = " << sigma2E;
-	cout << endl;
-	*/
-
-
+	delete opt;
 	return 0;
 }

@@ -75,7 +75,7 @@ namespace SiriusFM
 		m_ts[L-1] = m_ts[L-2] + tlast;
 
 		//PM: How many paths can be stored in-memory:
-		long PM = (m_MaxL * m_MaxPm) / L;
+		long PM = (m_MaxL * m_MaxPM) / L;
 		if(PM % 2)
 			--PM;
 		assert(PM > 0 && PM % 2 == 0);
@@ -150,7 +150,8 @@ namespace SiriusFM
 				}
 				//end of p loop
 				//eval in-mem paths
-				(*a_pathEval)(L, PM, m_paths, m_ts)
+				(*a_pathEval)(L, PM, m_paths, m_ts);
 			}
 		};
+	}
 }
