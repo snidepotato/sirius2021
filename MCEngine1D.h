@@ -13,45 +13,38 @@ namespace SiriusFM
 			 typename PathEvaluator>
 	class MCEngine1D
 	{
-		long const m_MaxLP;
+		long const m_MaxL;  //Max path len
+		long const m_MaxPM; //max num of paths stored in mem
 
-		double* const m_paths;
+		double* const m_paths; //stores paths
+		double* const m_ts; //timeline
 
-		long m_L; //Actual L 
-		long m_P; // 
-
-		double m_tau; //TimeStep as YearFraction
-		double m_t0; //2021.xxxx
-
-		Diffusion1D const * m_diff;
-		AProvider const * m_rateA;
-		BProvider const * m_rateB;
-
-		AssetClassA m_A; //Asset A
-		AssetClassB m_B; //Asset B
-
-		bool m_isRN; //risk-neutral trend; true for option pricing, false for
-				     //option speculating.
 	public:
 
-		MCEngine1D(long a_MaxLP):
-									m_MaxLP(a_MaxLP), 
-									m_paths(new double[m_MaxL*m_MaxP]),
-									m_L(0),
-									m_P(0)
+		MCEngine1D(long a_MaxL, long a_MaxPM):
+									m_MaxL(a_MaxL), 
+									m_MaxPM(a_MaxPM),
+									m_paths(new double[m_MaxL*m_MaxPM]),
+									m_ts(new double [m_MaxL])
 									
 		{
-			if(m_MaxLP <= 0)
-				throw std::invalid_argument("bad MaxLP");
+			if(m_MaxL <= 0 or m_MaxPM <= 0)
+				throw std::invalid_argument("bad ");
 
-			for(int lp = 0; lp < m_MaxLP; ++lp)
-				m_paths[lp] = 0;
+			for(long l = 0; l < m_MaxL; ++l)
+			{
+				m_ts[l] = 0;
+				long lp = l * m_MaxPM;
+				for(long p = 0; p < m_MaxPM; ++p)
+					m_paths[lp + p] = 0;
+			}
 		};
-
 		
-		std::tuple <long, long, double const*>
-
-		~MCEngine1D(){delete [] m_paths;};
+		~MCEngine1D()
+		{
+			delete [] m_paths;
+			delete [] m_ts;
+		};
 
 		MCEngine1D (MCEngine1D const&) = delete;
 		MCEngine1D& operator=(MCEngine1D const&) = delete;
