@@ -8,9 +8,15 @@
 
 namespace SiriusFM
 {
-	template<typename Diffusion1D, typename AProvider, typename BProvider,
-			 typename AssetClassA, typename AssetClassB, 
-			 typename PathEvaluator>
+	template
+	<
+		typename Diffusion1D, 
+		typename AProvider, 
+		typename BProvider,
+		typename AssetClassA,
+		typename AssetClassB, 
+		typename PathEvaluator
+	>
 	class MCEngine1D
 	{
 		long const m_MaxL;  //Max path len
@@ -54,7 +60,7 @@ namespace SiriusFM
 		(
 		 	time_t a_t0,
 			time_t a_T,
-			int a_tauMin,
+			int a_tauMins,
 			long a_P,
 			bool a_useTimerSeed,
 			Diffusion1D const* a_diff,

@@ -5,13 +5,20 @@
 
 namespace SiriusFM
 {
-	class EurCallOption final:public Option
+	template<typename AssetClassA, typename AssetClassB>
+	class EurCallOption final:public Option<AssetClassA, AssetClassB>
 	{
 		double const m_K;
 	public:
-		EurCallOption(double a_K, time_t a_expirTime):
-												Option(a_expirTime, false),
-											   	m_K(a_K)
+		EurCallOption
+		(
+		 AssetClassA a_assetA,
+		 AssetClassB a_assetB,
+		 double a_K,
+		 time_t a_expirTime
+		):
+		Option<AssetClassA, AssetClassB>(a_assetA, a_assetB, a_expirTime, 0),
+		m_K(a_K)
 		{
 			if(a_K <= 0)
 				throw std::invalid_argument("Bad K");
@@ -28,25 +35,36 @@ namespace SiriusFM
 		}
 	};
 	
-	class EurPutOption final:public Option
+	template<typename AssetClassA, typename AssetClassB>
+	class EurPutOption final:public Option<AssetClassA, AssetClassB>
 	{
 		double const m_K;
 	public:
-		EurPutOption(double a_K, time_t a_expirTime):
-												Option(a_expirTime, false),
-											  	m_K(a_K)
+		EurPutOption
+		(
+		 AssetClassA a_assetA,
+		 AssetClassB a_assetB,
+		 double a_K,
+		 time_t a_expirTime
+		):
+		Option<AssetClassA, AssetClassB>(a_assetA, a_assetB, a_expirTime, 0),
+		m_K(a_K)
 		{
 			if(a_K <= 0)
 				throw std::invalid_argument("Bad K");
 		}
-		
+
 		~EurPutOption() override {}
 
-		virtual double Payoff(long a_L,
+		virtual double Payoff(long a_L, 
 							  double const* a_S,
 							  double const* a_ts = nullptr) const override
 		{
-			return fmax(m_K - a_S[a_L - 1], 0); //fmax or std?
+			assert(a_L > 0 && a_S != nullptr);
+			return fmax(m_K - a_S[a_L - 1], 0);
 		}
 	};
+	
+	using EurCallOptionFX = EurCallOption<CcyE, CcyE>;
+	using EurPutOptionFX = EurPutOption<CcyE, CcyE>;
 }

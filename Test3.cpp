@@ -5,6 +5,7 @@
 #include "MCOptionPricer.hpp"
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 
 using namespace SiriusFM;
 using namespace std;
@@ -35,7 +36,6 @@ int main(int argc, char** argv)
 	CcyE ccyA = CcyE::USD;
 	CcyE ccyB = CcyE::USD;
 
-
 	char const* ratesFileA = nullptr; //todo
 	char const* ratesFileB = nullptr; //todo
 	bool useTimerSeed = true;//to read from file
@@ -43,29 +43,25 @@ int main(int argc, char** argv)
 	DiffusionGBM diff(mu, sigma, S0);
 	
 	//pricer for FX
-	MCOptionPricer1D
-	<
-		decltype(diff),
-		IRPConst,
-		IRPConst, 
-		CcyE,
-		CcyE
-	> Pricer(&diff, ratesFileA, ratesFileB, useTimerSeed); 
+	MCOptionPricer1D<decltype(diff), IRPConst, IRPConst, CcyE, CcyE> 
+		Pricer(&diff, ratesFileA, ratesFileB, useTimerSeed); 
 
-	//create the option spec
-	//pricing time:
 	time_t t0 = time(nullptr);
 	time_t T = t0 + SEC_IN_DAY * expirTime;
-	Option const* opt = (strcmp(OptType, "Call") == 0)
-						? static_cast<Option*>(new EurCallOption(K, T))
-						: 
-						(strcmp(OptType, "Put") == 0)
-						? static_cast<Option*> (new EurPutOption(K, T))
-						:throw invalid_argument("Bad option type");
 
-	double px = Pricer.Px(opt, ccyA, ccyB, t0, tau_mins, P);
+	OptionFX const* opt = nullptr;
 
-	cout << px << endl;
+	if(!strcmp(OptType, "Call"))
+		opt = new EurCallOptionFX(ccyA, ccyB, K, T);
+	else if(!strcmp(OptType, "Put"))
+		opt = new EurPutOptionFX(ccyA, ccyB, K, T);
+	else
+		throw invalid_argument("Bad OptType");
+
+	double px = Pricer.Px(opt, t0, tau_mins, P);
+
+	//cout << px << endl;
+
 	delete opt;
 	return 0;
 }
