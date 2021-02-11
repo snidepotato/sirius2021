@@ -1,6 +1,7 @@
 #pragma once
 #include "IRP.h"
 #include<iostream>
+#include<cmath>
 #include"Time.h"
 
 namespace SiriusFM
