@@ -39,7 +39,7 @@ $(TARGET) : $(OBJECTS_DIR) $(OBJECTS)
 
 
 
-
 clean:
 	$(shell rm -fr $(OBJECTS_DIR))
 	$(shell rm -f $(TARGET))
+	sl
