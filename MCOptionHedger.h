@@ -22,6 +22,8 @@ namespace SiriusFM
 		//===================================//
 		//PathEvaluator for OptionHedger     //
 		//===================================//
+		using DeltaFunc = std::function<double(double, double)>;
+
 		class OHPathEval
 		{
 			Option<AssetClassA, AssetClassB> const* const m_option;
@@ -40,7 +42,6 @@ namespace SiriusFM
 			double m_minPnL; 
 			double m_maxPnL;
 		public:
-			using DeltaFunc = std::function<double(double, double)>;
 
 			OHPathEval
 			(
