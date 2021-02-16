@@ -1,4 +1,5 @@
 #pragma once
+#include "IRP.h"
 #include <time.h>
 #include "Option.h"
 
@@ -31,6 +32,10 @@ namespace SiriusFM
 		double* const m_ts;
 		double* const m_ES;
 		double* const m_VarS;
+		int m_N;
+		int i0;
+		int m_M;
+		bool m_isFwd;
 
 	public:
 		GridNOP1D_S3_RKC1
@@ -48,9 +53,18 @@ namespace SiriusFM
 		  m_S(new double[m_maxN]),
 		  m_ts(new double[m_maxM]),
 		  m_ES(new double[m_maxM]),
-		  m_VarS(new double[m_maxM])
+		  m_VarS(new double[m_maxM]),
+		  m_N(0),
+		  m_i0(0),
+		  m_M(0), 
+		  m_isFwd(false)
 		{}
 
+		memset(m_grid, 0, m_maxN * m_maxM * sizeof(double));
+		memset(m_S, 0, m_maxN * sizeof(double));
+		memset(m_ts, 0, m_maxM * sizeof(double));
+		memset(m_ES, 0, m_maxM * sizeof(double));
+		memset(m_VarS, 0, m_maxM * sizeof(double));
 		~GridNOP1D_S3_RKC1()
 		{
 			delete[] (m_grid);
@@ -66,7 +80,7 @@ namespace SiriusFM
 		}
 
 		template<bool IsFwd>
-		void RunBI
+		void Run
 		(
 		  Option<AssetClassA, AssetClassB> const* a_option,
 		  Diffusion1D const * a_diff,
@@ -77,5 +91,6 @@ namespace SiriusFM
 		  int a_tauMins = 30, 
 		  double a_BFactor = 4.5
 		);
+		std::tuple<double, double, double> GetPxDeltaGamma0() const;
 	};
 }

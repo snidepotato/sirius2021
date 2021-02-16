@@ -5,6 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <cassert>
+#include <tuple>
 
 namespace SiriusFM
 {
@@ -26,11 +27,10 @@ namespace SiriusFM
 		AssetClassB
 	>
 	::
-	RunBI
+	Run
 	(
 		Option<AssetClassA, AssetClassB> const* a_option,
 		Diffusion1D const* a_diff,
-
 		double a_S0,
 		time_t a_t0,
 		long a_N,
@@ -40,6 +40,10 @@ namespace SiriusFM
 	{
 		if(a_option->m_isAsian)
 			throw std::invalid_argument("Can't price Asian");
+		if(IsFwd && a_option->m_isAmerican)
+			throw std::invalid_argument("Can't price American in fwd");
+
+		m_IsFwd = IsFwd;
 		assert(a_option != nullptr);
 		assert(a_diff != nullptr);
 		assert(a_tauMins > 0);
@@ -54,8 +58,8 @@ namespace SiriusFM
 		if(TTE <= 0 || Mints <= 0)
 			throw std::invalid_argument("already expired or too close");
 
-		long M = Mints + 1;
-		if(M >= m_maxM)
+		m_M = Mints + 1;
+		if(m_M >= m_maxM)
 			throw std::invalid_argument("too many t pts");
 		
 		double tau = TTE / double(Mints);
@@ -64,7 +68,7 @@ namespace SiriusFM
 		m_ES[0] = a_S0;
 		m_VarS[0] = 0;
 
-		for(int j = 0; j < M; ++j)
+		for(int j = 0; j < m_M; ++j)
 		{
 			double t = YearFrac(a_t0 + j * tauSecs);
 			m_ts[j] = t;
@@ -75,7 +79,7 @@ namespace SiriusFM
 			double rateDiff = fmax(rB-rA, 0);
 			
 			//integrating rates:
-			if(j < M-1)
+			if(j < m_M-1)
 			{
 				integrAB += rateDiff * tau;
 				m_ES[j+1] = a_S0 * exp(integrAB);
@@ -83,25 +87,32 @@ namespace SiriusFM
 				m_VarS[j+1] = m_VarS[j] + sigma * sigma * tau;
 			}
 		}
-		double B = m_ES[M-1] + a_BFactor * sqrt(m_VarS[M-1]);//upper bound
-		double h = B / double(a_N - 1);
+		double B = m_ES[m_M-1] + a_BFactor * sqrt(m_VarS[m_M-1]);//upper bound
+		double h = B / double(a_Nints - 1);
 
 
 		//Make sure S0 is exactly on the grid
-		h = a_S0 / round(a_S0 / h);
-		if(!isfinite(h))
+		m_i0 = int(round(a_S0 / h));
+		h = a_S0 / double(m_i0);
+		if(!std::isfinite(h))
 			throw std::invalid_argument("S0 too small, increase N");
 		B = h * double(a_Nints);
 		long N = a_Nints +1;
-		if( N > m_MaxN)
+		if(m_N > m_MaxN)
 			throw std::invalid_argument("Nints too large");
 
 		double* payoff = IsFwd?0:(m_grid + (m_M - 1) * m_N);
-		for(int i = 0; i < N; ++i)
+		for(int i = 0; i < m_N; ++i)
 		{
 			m_S[i] = double(i) * h;
 			if(!IsFwd)
-				payoff[i] = a_option -> Payoff(1, m_S + i, m_ts + (M-1));
+				payoff[i] = a_option -> Payoff(1, m_S + i, m_ts + (m_M-1));
+		}
+		if(IsFwd) //Initial cond -- delta(S-S0) 
+		{
+			for(int i = 0; i < m_N; ++i)
+				m_grid[i] = 0;
+			m_grid[m_i0] = 1 / h;
 		}
 		//low bound: always a const bound cond, cont w/ payoff, 0 if fwd
 		double fa = IsFwd?0:payoff[0];
@@ -111,60 +122,106 @@ namespace SiriusFM
 		//upper bound: const bound cond if it is 0, othrwse fix df/dS (Neumann) 
 		if(!IsFwd)
 		{
-			isNeumann = (payoff[N-1] != 0);
-			UBC = isNeumann ? (payoff[N-1]-payoff[N-2]) : 0;
+			isNeumann = (payoff[m_N-1] != 0);
+			UBC = isNeumann ? (payoff[m_N-1]-payoff[m_N-2]) : 0;
 		}
-		for(int j = 0; j < M - 1; ++j)
-		{
-			m_grid[j * N] = fa;
-			m_grid[j * N + N-1] = 0 //will be overwr if Neumann
-		}
+		for(int j = 0; j < m_M - 1; ++j)
+			m_grid[j * m_N] = fa;
 		
 		double D2 = 2 * h * h; // denominator in diffusion term
-		for(int j = IsFwd?0:M-1;
-			IsFwd?(j <= M-2):(j >=1);
-			j += (IsFwd?1:-1))
+		for(int 	 j =  IsFwd ? 0 : m_M-1;
+			IsFwd ? (j <= m_M-2)    : (j >=1);
+			j += (IsFwd ? 1 : -1 ))
 		{
-			double const* fj = m_grid + j * N; //prev time layer (j) fixme
-			double* fjm1  = fj - N; //curr layer to be filled in (j-1). fixme
+			double const* fj = m_grid + j * m_N; //prev time layer (j) fixme
+			double* fj1 = const_cast<double*>(IsFwd?(fj + m_N) : (fj - m_N)); 
 
-			fjm1[0] = fa; //low bound
+			fj1[0] = fa; //low bound
 
 			double tj = m_ts[j];
 			double rateAj = m_irpA.r(a_option->m_assetA, tj);
 			double rateBj = m_irpB.r(a_option->m_assetB, tj);
 			double C1 = (rateBj - rateAj) / (2 * h);//coeff in conv term
-			for(int i = 1; i <= M-2; ++i)
+#			pragma omp parallel for
+			for(int i = 1; i <= m_N-2; ++i)
 			{
 				//to be parallelised
 				double Si = m_S[i];
-				double fjim1 = fj[i-1];
+				double fjiM = fj[i-1];
 				double fji = fj[i];
-				double fjip1 = fj[i+1];
+				double fjiP = fj[i+1];
 				double sigma = m_diff->sigma(Si, tj);
 
 				double DfDt = 0;
 				if(IsFwd)
 				{
 					//fwd: fp
-					double Sim1 = m_S[i-1];
-					double Sip1 = m_S[i+1];
-					double sigmaP = a_diff->sigma(Sip1, tj);
-					double sigmaM = a_diff->sigma(Sim1, tj
-					DfDt = -C1 * (Sip1 * fjiP - Sim1 * fjim1) + 
-						   (sigmaP * sigmaP * fjip1 - 2 * sigma * sigma * fij +
-							sigmaM * sigmaM * fijM) / D;
+					double SiM = m_S[i-1];
+					double SiP = m_S[i+1];
+					double sigmaP = a_diff->sigma(SiP, tj);
+					double sigmaM = a_diff->sigma(SiM, tj);
+					DfDt = 
+					-C1 * (Sip1 * fjiP - Sim1 * fjiM) + 
+						(
+						 sigmaP * sigmaP * fjiP -
+						 2 * sigma * sigma * fij + 
+					 	 sigmaM * sigmaM * fijM
+						) / D;
 				}
 				else
 				{
 					//bwd: bsm
 					DfDt = rateBj * fji - 
-							  	C1 * Si * (fjip1 - fjim1) - 
-							  	sigma * sigma / D2 * (fjip1 - 2*fji + fjim1);
+						   C1 * Si * (fjiP - fjiM) - 
+						   sigma * sigma / D2 * (fjiP - 2*fji + fjiM);
 				}
-				fjm1[i] = fji + tau * DfDt;
+				fj1[i] = fji + tau * DfDt;
 			}
-			fjm1[N-1] = isNeumann ? (fjm1[N-2] + UBC) : UBC;
+			fj1[m_N-1] = (!IsFwd &&isNeumann) ? (fj1[m_N-2] + UBC) : UBC;
+
+			if(a_option->m_isAmerican)
+			{
+				assert(!IsFwd);
+				for(int i = 0; i < m_N; ++i)
+				{
+					double intrVal = a_option->Payoff(1, m_S+i, &tj);
+					fj1[i] = fmax(fj1[i], intrVal);
+				}
+			}
 		}
+	}
+	template
+	<
+		typename Diffusion1D,
+		typename AProvider,
+		typename BProvider,
+		typename AssetClassA, 
+		typename AssetClassB
+	>
+	std::tuple<double, double, double>
+	GridNOP1_S3_RKC1
+	<
+		Diffusion1D,
+		AProvider,
+		BProvider,
+		AssetClassA,
+		AssetClassB,
+	>
+	::
+	GetPxDeltaGamma0() const
+	{
+		if(m_M == 0 || m_N == 0)
+			throw std::runtime_error("call Run first!");
+		
+		double h = m_S[1] - m_S[0];
+		double px = m_grid[m_i0];
+		double delta = 0;
+		double gamma = 0;
+		if(0 < m_i0 && m_i0 <= m_N-2)
+		{
+			delta = (m_grid[m_i0+1] - m_grid[m_i0-1]) / (2*h);
+			gamma = (m_grid[m_i0+1] - 2*m_grid[m_i0] + m_grid[m_i0-1])/(h*h);
+		}
+		return std::make_tuple(px, delta, gamma);
 	}
 }
