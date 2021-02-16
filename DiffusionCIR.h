@@ -9,7 +9,7 @@ namespace SiriusFM
 		double const m_theta;
 		double const m_kappa;
 		double const m_sigma;
-		double const m_S0
+		double const m_S0;
 
 	public:
 		DiffusionCIR(double a_theta,
@@ -22,16 +22,14 @@ namespace SiriusFM
 			m_S0(a_S0)
 		{
 			if(m_sigma <= 0)
-			{
 				throw std::invalid_argument("Bad sigma");
-			}
 		};
 
-		double mu(double a_S, double t) const {return m_kappa*(m_theta - a_S);};
+		double mu(double a_S, double t) const {return m_kappa*(m_theta - a_S);}
 		double sigma(double a_S = 0, double t) const 
 		{
 			return m_sigma * sqrt(a_S);
-		};
+		}
 		double GetStartPoint() const {return m_S0;}
 	};
 }
