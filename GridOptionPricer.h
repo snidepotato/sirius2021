@@ -65,6 +65,7 @@ namespace SiriusFM
 			const_cast<double*&>(m_VarS) = nullptr;
 		}
 
+		template<bool IsFwd>
 		void RunBI
 		(
 		  Option<AssetClassA, AssetClassB> const* a_option,

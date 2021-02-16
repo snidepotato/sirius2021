@@ -6,12 +6,14 @@
 #include <iostream>
 #include <cstring>
 #include <stdexcept>
+#include <fstream>
 
 using namespace SiriusFM;
 using namespace std;
 
 int main(int argc, char** argv)
 {
+	//time_t time1 = time(nullptr);
 	if(argc != 9)
 	{
 		cerr << "params: mu, sigma, S0,\nCall/Put, K, Tdays,\ntau_mins, P\n";
@@ -60,8 +62,10 @@ int main(int argc, char** argv)
 
 	double px = Pricer.Px(opt, t0, tau_mins, P);
 
-	//cout << px << endl;
+	cout << px << endl;
 
 	delete opt;
+	//time_t time2 = time(nullptr);
+	//cout << time2 - time1;
 	return 0;
 }

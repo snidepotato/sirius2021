@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "MCOptionPricer.h"
@@ -27,6 +28,8 @@ namespace SiriusFM
 	) 	
 	{
 		assert(a_option != NULL && a_tauMins > 0 && a_P > 0);
+		if(a_option->m_isAmerican)
+			throw std::invalid_argument("MC cannot price American");
 
 		//Path evaluator
 		OPPathEval pathEval(a_option);

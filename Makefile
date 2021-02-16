@@ -2,7 +2,7 @@
 #g++ -Wall -g -std=c++17 Test2.cpp IRProvider.cpp -o a && ./a [args]
 TARGET = run
 
-SOURCES = Test2 IRProviderConst 
+SOURCES = Test5 IRProviderConst 
 
 EXTLIBS =
 
