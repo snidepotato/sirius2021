@@ -135,8 +135,8 @@ namespace SiriusFM
 
 
 			double tj = m_ts[j];
-			double rateAj = m_irpA.r(a_option->m_assetA, tj);
-			double rateBj = m_irpB.r(a_option->m_assetB, tj);
+			double rateAj = m_irpA.r(a_option->GetAssetA(), tj);
+			double rateBj = m_irpB.r(a_option->GetAssetB(), tj);
 			double C1 = (rateBj - rateAj) / (2 * h);//coeff in conv term
 			fj1[0] = fa; //low bound
 //#			pragma omp parallel for
@@ -176,7 +176,7 @@ namespace SiriusFM
 			}
 			fj1[m_N-1] = (!IsFwd && IsNeumann) ? (fj1[m_N-2] + UBC) : UBC;
 
-			if(a_option->GetIsAmerican())
+			if(a_option->IsAmerican())
 			{
 				assert(!IsFwd);
 				for(int i = 0; i < m_N; ++i)
