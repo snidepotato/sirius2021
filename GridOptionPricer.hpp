@@ -176,7 +176,7 @@ namespace SiriusFM
 			}
 			fj1[m_N-1] = (!IsFwd && IsNeumann) ? (fj1[m_N-2] + UBC) : UBC;
 
-			if(a_option->m_isAmerican)
+			if(a_option->GetIsAmerican())
 			{
 				assert(!IsFwd);
 				for(int i = 0; i < m_N; ++i)
