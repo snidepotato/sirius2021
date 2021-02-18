@@ -16,7 +16,7 @@ namespace SiriusFM
 		 AssetClassB a_assetB,
 		 double a_K,
 		 time_t a_expirTime,
-		 bool a_isAmerican
+		 bool a_isAmerican = 0
 		):
 		Option<AssetClassA, AssetClassB>(a_assetA,
 										 a_assetB,
@@ -51,7 +51,7 @@ namespace SiriusFM
 		 AssetClassB a_assetB,
 		 double a_K,
 		 time_t a_expirTime,
-		 bool a_isAmerican
+		 bool a_isAmerican = 0
 		):
 		Option<AssetClassA, AssetClassB>(a_assetA,
 										 a_assetB,
@@ -76,5 +76,5 @@ namespace SiriusFM
 	};
 	
 	using CallOptionFX = CallOption<CcyE, CcyE>;
-	using OptionFX = PutOption<CcyE, CcyE>;
+	using PutOptionFX = PutOption<CcyE, CcyE>;
 }

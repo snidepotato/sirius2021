@@ -1,6 +1,6 @@
 #pragma once
 #include<cmath>
-#include<stexcept>
+#include<stdexcept>
 
 namespace SiriusFM
 {
@@ -26,7 +26,7 @@ namespace SiriusFM
 		};
 
 		double mu(double a_S, double t) const {return m_kappa*(m_theta-a_S);};
-		double sigma(double a_S = 0, double t) const {return m_sigma;};
+		double sigma(double a_S, double t) const {return m_sigma;};
 		double GetStartPoint() const {return m_S0;};
 	};
 }

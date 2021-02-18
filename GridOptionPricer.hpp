@@ -33,27 +33,25 @@ namespace SiriusFM
 		Diffusion1D const* a_diff,
 		double a_S0,
 		time_t a_t0,
-		long a_N,
+		long a_Nints,
 		int a_tauMins,
 		double a_BFactor 
 	)
 	{
-		if(a_option->m_isAsian)
+		if(a_option->IsAsian())
 			throw std::invalid_argument("Can't price Asian");
-		if(IsFwd && a_option->m_isAmerican)
+		if(IsFwd && a_option->IsAmerican())
 			throw std::invalid_argument("Can't price American in fwd");
 
-		m_IsFwd = IsFwd;
+		m_isFwd = IsFwd;
 		assert(a_option != nullptr);
 		assert(a_diff != nullptr);
 		assert(a_tauMins > 0);
-		assert(a_N > 1);
 
-		double TTE = YearFracInt(a_option->m_expirTime - a_t0);
+		double TTE = YearFracInt(a_option->GetExpirTime() - a_t0);
 
 		long tauSecs = a_tauMins * SEC_IN_MIN;
-		long Mints = (a_option->m_expirTime - a_t0) / tauSecs;
-		//member is explicit, consider making up a getter
+		long Mints = (a_option->GetExpirTime() - a_t0) / tauSecs;
 
 		if(TTE <= 0 || Mints <= 0)
 			throw std::invalid_argument("already expired or too close");
@@ -73,8 +71,8 @@ namespace SiriusFM
 			double t = YearFrac(a_t0 + j * tauSecs);
 			m_ts[j] = t;
 
-			double rA = m_irpA.r(a_option->m_assetA, t);
-			double rB = m_irpB.r(a_option->m_assetB, t);
+			double rA = m_irpA.r(a_option->GetAssetA(), t);
+			double rB = m_irpB.r(a_option->GetAssetB(), t);
 
 			double rateDiff = fmax(rB-rA, 0);
 			
@@ -88,8 +86,7 @@ namespace SiriusFM
 			}
 		}
 		double B = m_ES[m_M-1] + a_BFactor * sqrt(m_VarS[m_M-1]);//upper bound
-		double h = B / double(a_Nints - 1);
-
+		double h = B / double(a_Nints);
 
 		//Make sure S0 is exactly on the grid
 		m_i0 = int(round(a_S0 / h));
@@ -97,11 +94,11 @@ namespace SiriusFM
 		if(!std::isfinite(h))
 			throw std::invalid_argument("S0 too small, increase N");
 		B = h * double(a_Nints);
-		long N = a_Nints +1;
-		if(m_N > m_MaxN)
+		m_N = a_Nints +1;
+		if(m_N > m_maxN)
 			throw std::invalid_argument("Nints too large");
 
-		double* payoff = IsFwd?0:(m_grid + (m_M - 1) * m_N);
+		double* payoff = IsFwd?nullptr:(m_grid + (m_M - 1) * m_N);
 		for(int i = 0; i < m_N; ++i)
 		{
 			m_S[i] = double(i) * h;
@@ -122,8 +119,8 @@ namespace SiriusFM
 		//upper bound: const bound cond if it is 0, othrwse fix df/dS (Neumann) 
 		if(!IsFwd)
 		{
-			isNeumann = (payoff[m_N-1] != 0);
-			UBC = isNeumann ? (payoff[m_N-1]-payoff[m_N-2]) : 0;
+			IsNeumann = (payoff[m_N-1] != 0);
+			UBC = IsNeumann ? (payoff[m_N-1]-payoff[m_N-2]) : 0;
 		}
 		for(int j = 0; j < m_M - 1; ++j)
 			m_grid[j * m_N] = fa;
@@ -136,13 +133,13 @@ namespace SiriusFM
 			double const* fj = m_grid + j * m_N; //prev time layer (j) fixme
 			double* fj1 = const_cast<double*>(IsFwd?(fj + m_N) : (fj - m_N)); 
 
-			fj1[0] = fa; //low bound
 
 			double tj = m_ts[j];
 			double rateAj = m_irpA.r(a_option->m_assetA, tj);
 			double rateBj = m_irpB.r(a_option->m_assetB, tj);
 			double C1 = (rateBj - rateAj) / (2 * h);//coeff in conv term
-#			pragma omp parallel for
+			fj1[0] = fa; //low bound
+//#			pragma omp parallel for
 			for(int i = 1; i <= m_N-2; ++i)
 			{
 				//to be parallelised
@@ -150,7 +147,7 @@ namespace SiriusFM
 				double fjiM = fj[i-1];
 				double fji = fj[i];
 				double fjiP = fj[i+1];
-				double sigma = m_diff->sigma(Si, tj);
+				double sigma = a_diff->sigma(Si, tj);
 
 				double DfDt = 0;
 				if(IsFwd)
@@ -161,12 +158,12 @@ namespace SiriusFM
 					double sigmaP = a_diff->sigma(SiP, tj);
 					double sigmaM = a_diff->sigma(SiM, tj);
 					DfDt = 
-					-C1 * (Sip1 * fjiP - Sim1 * fjiM) + 
+					-C1 * (SiP * fjiP - SiM * fjiM) + 
 						(
 						 sigmaP * sigmaP * fjiP -
-						 2 * sigma * sigma * fij + 
-					 	 sigmaM * sigmaM * fijM
-						) / D;
+						 2 * sigma * sigma * fji + 
+					 	 sigmaM * sigmaM * fjiM
+						) / D2;
 				}
 				else
 				{
@@ -175,9 +172,9 @@ namespace SiriusFM
 						   C1 * Si * (fjiP - fjiM) - 
 						   sigma * sigma / D2 * (fjiP - 2*fji + fjiM);
 				}
-				fj1[i] = fji + tau * DfDt;
+				fj1[i] = fji - tau * DfDt;
 			}
-			fj1[m_N-1] = (!IsFwd &&isNeumann) ? (fj1[m_N-2] + UBC) : UBC;
+			fj1[m_N-1] = (!IsFwd && IsNeumann) ? (fj1[m_N-2] + UBC) : UBC;
 
 			if(a_option->m_isAmerican)
 			{
@@ -190,6 +187,7 @@ namespace SiriusFM
 			}
 		}
 	}
+
 	template
 	<
 		typename Diffusion1D,
@@ -199,13 +197,13 @@ namespace SiriusFM
 		typename AssetClassB
 	>
 	std::tuple<double, double, double>
-	GridNOP1_S3_RKC1
+	GridNOP1D_S3_RKC1
 	<
 		Diffusion1D,
 		AProvider,
 		BProvider,
 		AssetClassA,
-		AssetClassB,
+		AssetClassB
 	>
 	::
 	GetPxDeltaGamma0() const
@@ -221,6 +219,14 @@ namespace SiriusFM
 		{
 			delta = (m_grid[m_i0+1] - m_grid[m_i0-1]) / (2*h);
 			gamma = (m_grid[m_i0+1] - 2*m_grid[m_i0] + m_grid[m_i0-1])/(h*h);
+		}
+		else if(m_i0 == 0)
+		{
+			delta = (m_grid[1] - m_grid[0]) / h;
+		}
+		else
+		{
+			delta = (m_grid[m_N-1] - m_grid[m_N-2])/h;
 		}
 		return std::make_tuple(px, delta, gamma);
 	}

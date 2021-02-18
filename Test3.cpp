@@ -54,9 +54,9 @@ int main(int argc, char** argv)
 	OptionFX const* opt = nullptr;
 
 	if(!strcmp(OptType, "Call"))
-		opt = new EurCallOptionFX(ccyA, ccyB, K, T);
+		opt = new CallOptionFX(ccyA, ccyB, K, T);
 	else if(!strcmp(OptType, "Put"))
-		opt = new EurPutOptionFX(ccyA, ccyB, K, T);
+		opt = new PutOptionFX(ccyA, ccyB, K, T);
 	else
 		throw invalid_argument("Bad OptType");
 

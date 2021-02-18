@@ -3,7 +3,7 @@
 
 namespace SiriusFM
 {
-                
+
 	class DiffusionCEV
 	{
 		double const m_mu;
@@ -16,7 +16,7 @@ namespace SiriusFM
 					 double a_sigma,
 					 double a_beta,
 					 double a_S0):
-			m_mu(a_mu), 
+			m_mu(a_mu),
 			m_sigma(a_sigma),
 			m_beta(a_beta),
 			m_S0(a_S0)
@@ -26,7 +26,7 @@ namespace SiriusFM
 		};
 
 		double mu(double a_S, double t) const {return m_mu * a_S;};
-		double sigma(double a_S, double t) const 
+		double sigma(double a_S, double t) const
 		{
 			return m_sigma * pow(a_S, m_beta);
 		};

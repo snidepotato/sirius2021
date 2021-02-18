@@ -26,7 +26,7 @@ namespace SiriusFM
 		};
 
 		double mu(double a_S, double t) const {return m_kappa*(m_theta - a_S);}
-		double sigma(double a_S = 0, double t) const 
+		double sigma(double a_S, double t) const 
 		{
 			return m_sigma * sqrt(a_S);
 		}

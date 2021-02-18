@@ -7,12 +7,12 @@ namespace SiriusFM
 	template<typename AssetClassA, typename AssetClassB>
 	class Option
 	{
-	public: //!!!!!!!!!!!
 		AssetClassA const m_assetA;
 		AssetClassB const m_assetB;
 		time_t const m_expirTime;
 		bool const m_isAmerican;
 		bool const m_isAsian;
+	public: 
 		Option
 		(
 		 AssetClassA a_assetA,
@@ -37,6 +37,15 @@ namespace SiriusFM
 		const = 0;
 
 		virtual ~Option() {};
+
+		bool IsAmerican() const {return m_isAmerican;}
+		bool IsAsian() const {return m_isAsian;}
+
+		AssetClassA GetAssetA() const {return m_assetA;}
+		AssetClassB GetAssetB() const {return m_assetB;}
+
+		time_t GetExpirTime() const {return m_expirTime;}
+
 	};
 	using OptionFX = Option<CcyE, CcyE>;
 }

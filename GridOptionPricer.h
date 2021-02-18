@@ -33,7 +33,7 @@ namespace SiriusFM
 		double* const m_ES;
 		double* const m_VarS;
 		int m_N;
-		int i0;
+		int m_i0;
 		int m_M;
 		bool m_isFwd;
 
@@ -58,13 +58,14 @@ namespace SiriusFM
 		  m_i0(0),
 		  m_M(0), 
 		  m_isFwd(false)
-		{}
+		{
+			memset(m_grid, 0, m_maxN * m_maxM * sizeof(double));
+			memset(m_S, 0, m_maxN * sizeof(double));
+			memset(m_ts, 0, m_maxM * sizeof(double));
+			memset(m_ES, 0, m_maxM * sizeof(double));
+			memset(m_VarS, 0, m_maxM * sizeof(double));
+		}
 
-		memset(m_grid, 0, m_maxN * m_maxM * sizeof(double));
-		memset(m_S, 0, m_maxN * sizeof(double));
-		memset(m_ts, 0, m_maxM * sizeof(double));
-		memset(m_ES, 0, m_maxM * sizeof(double));
-		memset(m_VarS, 0, m_maxM * sizeof(double));
 		~GridNOP1D_S3_RKC1()
 		{
 			delete[] (m_grid);
